@@ -202,7 +202,7 @@
       <div class="bd">
         <div class="row cols4" style="margin-bottom:10px">
           <div>
-            <label>Название</label>
+            <label>Название (необязательно)</label>
             <input id="inName" placeholder="Напр. Midterm 1" />
           </div>
           <div>
@@ -353,25 +353,33 @@
   });
 
   function readNewExam(){
-    const name = (inName.value || "").trim();
+    let name = (inName.value || "").trim();
     const weight = num(inWeight.value);
     const score = num(inScore.value);
     const max = num(inMax.value);
 
     const errs = [];
-    if (!name) errs.push("Название не заполнено.");
+    // имя больше НЕ проверяем
     if (!(weight >= 0)) errs.push("Вес должен быть числом ≥ 0.");
     if (!(max > 0)) errs.push("Максимум должен быть > 0.");
     if (!(score >= 0)) errs.push("Баллы должны быть числом ≥ 0.");
     if (max > 0 && score > max) errs.push("Баллы не могут быть больше максимума.");
 
     if (errs.length){
-      showMsg(errs.join(" "));
-      return null;
+        showMsg(errs.join(" "));
+        return null;
     }
+
+    // автоподстановка имени
+    if (!name){
+        const next = (exams?.length || 0) + 1;
+        name = `Работа ${next}`;
+    }
+
     hideMsg();
     return { id: crypto.randomUUID(), name, weight, score, max };
   }
+
 
   function clearInputs(){
     inName.value = "";
