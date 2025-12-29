@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Калькулятор оценок за семестр</title>
+  <style>
+    :root{
+      --bg:#0f1117;
+      --card:#151a23;
+      --muted:#a8b2c6;
+      --text:#e7ecf7;
+      --border:rgba(255,255,255,.10);
+      --shadow: 0 10px 24px rgba(0,0,0,.35);
+      --radius:16px;
+
+      --accent:#5b8cff;
+      --danger:#ff5c7a;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color:var(--text);
+      line-height:1.35;
+    }
+    .wrap{max-width:1100px;margin:32px auto;padding:0 16px}
+    header{
+      display:flex; gap:16px; align-items:flex-end; justify-content:space-between;
+      margin-bottom:18px;
+    }
+    h1{font-size:20px;margin:0}
+    .sub{color:var(--muted); font-size:13px; margin-top:6px}
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.35fr .65fr;
+      gap:14px;
+    }
+    @media (max-width: 920px){
+      .grid{grid-template-columns:1fr}
+      header{flex-direction:column; align-items:flex-start}
+    }
+
+    .card{
+      background: var(--card);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 16px;
+      border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+    }
+    .card .hd b{font-size:14px}
+    .card .bd{padding:14px 16px}
+
+    .row{display:grid; gap:10px}
+    .row.cols4{grid-template-columns: 1.1fr .9fr .9fr .9fr}
+
+    @media (max-width: 920px){
+      .row.cols4{grid-template-columns:1fr 1fr}
+    }
+
+    label{font-size:12px;color:var(--muted);display:block;margin:0 0 6px}
+
+    input, button{
+      width:100%;
+      padding:10px 10px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.25);
+      color: var(--text);
+      outline:none;
+    }
+    input::placeholder{color:rgba(231,236,247,.45)}
+    input:focus{
+      border-color: rgba(91,140,255,.65);
+      box-shadow: 0 0 0 4px rgba(91,140,255,.18);
+    }
+
+    button{
+      cursor:pointer;
+      border:1px solid rgba(91,140,255,.55);
+      background: rgba(91,140,255,.18);
+      transition: transform .04s ease, filter .15s ease;
+      font-weight:600;
+    }
+    button:hover{filter:brightness(1.07)}
+    button:active{transform:translateY(1px)}
+
+    .btnRow{display:flex; gap:10px; margin-top:10px}
+    .btnSecondary{
+      border-color: rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+    }
+    .btnDanger{
+      border-color: rgba(255,92,122,.55);
+      background: rgba(255,92,122,.14);
+    }
+
+    table{width:100%; border-collapse:separate; border-spacing:0; overflow:hidden}
+    thead th{
+      text-align:left;
+      font-size:12px;
+      color:var(--muted);
+      padding:10px 10px;
+      border-bottom:1px solid var(--border);
+      background: rgba(0,0,0,.18);
+      position:sticky; top:0;
+    }
+    tbody td{
+      padding:10px 10px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      vertical-align:middle;
+    }
+    tbody tr:hover td{background: rgba(255,255,255,.03)}
+
+    .cellInput{
+      width:100%;
+      padding:8px 8px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      color: var(--text);
+    }
+
+    .typePill{
+      display:inline-block;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      font-size:12px;
+      color: var(--text);
+      white-space:nowrap;
+    }
+
+    .muted{color:var(--muted)}
+    .kpis{display:grid; gap:10px}
+    .kpi{
+      padding:12px 12px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background: rgba(0,0,0,.22);
+    }
+    .kpi .t{font-size:12px;color:var(--muted)}
+    .kpi .v{font-size:20px;font-weight:800;margin-top:4px}
+    .kpi .s{font-size:12px;color:var(--muted); margin-top:4px}
+
+    .warn{
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,92,122,.35);
+      background: rgba(255,92,122,.10);
+      color: #ffd7de;
+      font-size:13px;
+    }
+
+    .tiny{font-size:12px;color:var(--muted)}
+    .right{display:flex; gap:10px; align-items:center}
+
+    .inline{display:flex; gap:10px; align-items:flex-end}
+    .inline > div{flex:1}
+
+    .delBtn{
+      width:auto;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,92,122,.45);
+      background: rgba(255,92,122,.12);
+      color: #ffd0d9;
+      font-weight:700;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Калькулятор оценок за семестр</h1>
+      <div class="sub">Добавляй работы, задавай вес (%) и баллы — всё считается автоматически.</div>
+    </div>
+    <div class="right">
+      <div class="tiny">Сохраняется в этом браузере</div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <div class="hd">
+        <b>Работы</b>
+        <div class="right">
+          <button id="btnAddSample" class="btnSecondary" title="Добавить пример для ориентира">Добавить пример</button>
+        </div>
+      </div>
+
+      <div class="bd">
+        <div class="row cols4" style="margin-bottom:10px">
+          <div>
+            <label>Название</label>
+            <input id="inName" placeholder="Напр. Midterm 1" />
+          </div>
+          <div>
+            <label>Вес, %</label>
+            <input id="inWeight" type="number" min="0" step="0.1" placeholder="Напр. 20" />
+          </div>
+          <div>
+            <label>Баллы</label>
+            <input id="inScore" type="number" min="0" step="0.1" placeholder="Напр. 45" />
+          </div>
+          <div>
+            <label>Макс.</label>
+            <input id="inMax" type="number" min="1" step="0.1" placeholder="Напр. 50" />
+          </div>
+        </div>
+
+        <div class="btnRow">
+          <button id="btnAdd">Добавить</button>
+          <button id="btnClear" class="btnDanger">Сбросить всё</button>
+        </div>
+
+        <div style="margin-top:14px; overflow:auto; border-radius:14px; border:1px solid var(--border)">
+          <table>
+            <thead>
+              <tr>
+                <th style="min-width:180px">Название</th>
+                <th style="min-width:90px">Вес, %</th>
+                <th style="min-width:90px">Баллы</th>
+                <th style="min-width:90px">Макс.</th>
+                <th style="min-width:120px">%</th>
+                <th style="min-width:90px"></th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="tiny" style="margin-top:10px">
+          Подсказка: вес — это вклад в итоговую оценку. Обычно суммарный вес = 100%.
+        </div>
+      </div>
+    </section>
+
+    <aside class="card">
+      <div class="hd">
+        <b>Итоги</b>
+        <div class="tiny" id="statusText"></div>
+      </div>
+      <div class="bd">
+        <div class="kpis">
+          <div class="kpi">
+            <div class="t">Сумма весов</div>
+            <div class="v" id="kpiWeight">0%</div>
+            <div class="s muted" id="kpiWeightHint">Нужно 100% для полного расчёта семестра</div>
+          </div>
+
+          <div class="kpi">
+            <div class="t">Текущий результат по введённым работам</div>
+            <div class="v" id="kpiCurrent">—</div>
+            <div class="s muted">Средневзвешенный по введённым весам (делим на сумму весов).</div>
+          </div>
+
+          <div class="kpi">
+            <div class="t">Итог за семестр, если остальное = 0</div>
+            <div class="v" id="kpiIfZero">—</div>
+            <div class="s muted">Вклад в 100% семестра (делим на 100).</div>
+          </div>
+
+          <div class="kpi">
+            <div class="t">Что нужно на оставшиеся работы</div>
+            <div class="inline" style="margin-top:6px">
+              <div>
+                <label>Цель, %</label>
+                <input id="inTarget" type="number" min="0" max="100" step="0.1" placeholder="Напр. 85" />
+              </div>
+              <div>
+                <label>&nbsp;</label>
+                <button id="btnNeed" class="btnSecondary">Посчитать</button>
+              </div>
+            </div>
+            <div class="v" id="kpiNeed" style="margin-top:10px">—</div>
+            <div class="s muted" id="kpiNeedHint">Если веса уже = 100%, “оставшихся” нет.</div>
+          </div>
+
+          <div id="msgBox" class="warn" style="display:none"></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+  const STORAGE_KEY = "semesterGradeCalc.v2"; // новая версия, т.к. структура изменилась
+
+  /** @type {{id:string,name:string,weight:number,score:number,max:number}[]} */
+  let exams = load() ?? [];
+
+  const el = (id) => document.getElementById(id);
+
+  const tbody = el("tbody");
+
+  const inName = el("inName");
+  const inWeight = el("inWeight");
+  const inScore = el("inScore");
+  const inMax = el("inMax");
+
+  const kpiWeight = el("kpiWeight");
+  const kpiWeightHint = el("kpiWeightHint");
+  const kpiCurrent = el("kpiCurrent");
+  const kpiIfZero = el("kpiIfZero");
+  const kpiNeed = el("kpiNeed");
+  const kpiNeedHint = el("kpiNeedHint");
+  const msgBox = el("msgBox");
+  const statusText = el("statusText");
+
+  el("btnAdd").addEventListener("click", () => {
+    const exam = readNewExam();
+    if (!exam) return;
+    exams.push(exam);
+    save();
+    clearInputs();
+    render();
+  });
+
+  el("btnClear").addEventListener("click", () => {
+    const ok = confirm("Сбросить все записи? Это удалит сохранённые данные в этом браузере.");
+    if (!ok) return;
+    exams = [];
+    save();
+    render();
+  });
+
+  el("btnAddSample").addEventListener("click", () => {
+    const sample = [
+      { name: "Midterm 1", weight: 20, score: 78, max: 100 },
+      { name: "Quiz pack", weight: 15, score: 42, max: 50 },
+      { name: "Project", weight: 25, score: 90, max: 100 },
+      { name: "Final", weight: 40, score: 0,  max: 100 },
+    ].map(x => ({ id: crypto.randomUUID(), ...x }));
+    exams = [...exams, ...sample];
+    save();
+    render();
+  });
+
+  el("btnNeed").addEventListener("click", () => {
+    renderNeedOnly();
+  });
+
+  function readNewExam(){
+    const name = (inName.value || "").trim();
+    const weight = num(inWeight.value);
+    const score = num(inScore.value);
+    const max = num(inMax.value);
+
+    const errs = [];
+    if (!name) errs.push("Название не заполнено.");
+    if (!(weight >= 0)) errs.push("Вес должен быть числом ≥ 0.");
+    if (!(max > 0)) errs.push("Максимум должен быть > 0.");
+    if (!(score >= 0)) errs.push("Баллы должны быть числом ≥ 0.");
+    if (max > 0 && score > max) errs.push("Баллы не могут быть больше максимума.");
+
+    if (errs.length){
+      showMsg(errs.join(" "));
+      return null;
+    }
+    hideMsg();
+    return { id: crypto.randomUUID(), name, weight, score, max };
+  }
+
+  function clearInputs(){
+    inName.value = "";
+    inWeight.value = "";
+    inScore.value = "";
+    inMax.value = "";
+    inName.focus();
+  }
+
+  function render(){
+    tbody.innerHTML = "";
+    if (!exams.length){
+      tbody.innerHTML = `<tr><td colspan="6" class="muted" style="padding:14px 10px">
+        Пока пусто. Добавь первую работу выше.
+      </td></tr>`;
+      computeAndPaint();
+      return;
+    }
+
+    for (const ex of exams){
+      const tr = document.createElement("tr");
+
+      tr.appendChild(tdInput(ex, "name", "text"));
+      tr.appendChild(tdInput(ex, "weight", "number", { step:"0.1", min:"0" }));
+      tr.appendChild(tdInput(ex, "score", "number", { step:"0.1", min:"0" }));
+      tr.appendChild(tdInput(ex, "max", "number", { step:"0.1", min:"0.1" }));
+
+      const tdPct = document.createElement("td");
+      tdPct.innerHTML = `<span class="typePill">${fmtPct(scorePct(ex))}</span>`;
+      tr.appendChild(tdPct);
+
+      const tdDel = document.createElement("td");
+      const btn = document.createElement("button");
+      btn.className = "delBtn";
+      btn.textContent = "Удалить";
+      btn.addEventListener("click", () => {
+        exams = exams.filter(x => x.id !== ex.id);
+        save();
+        render();
+      });
+      tdDel.appendChild(btn);
+      tr.appendChild(tdDel);
+
+      tbody.appendChild(tr);
+    }
+
+    computeAndPaint();
+  }
+
+  function tdInput(ex, key, type, attrs={}){
+    const td = document.createElement("td");
+    const input = document.createElement("input");
+    input.className = "cellInput";
+    input.type = type;
+    input.value = ex[key] ?? "";
+    for (const [k,v] of Object.entries(attrs)) input.setAttribute(k, v);
+
+    input.addEventListener("input", () => {
+      if (type === "number"){
+        ex[key] = num(input.value);
+        if (key === "max" && ex.max <= 0) ex.max = 0;
+        if ((key === "score" || key === "max") && ex.max > 0 && ex.score > ex.max) {
+          showMsg("В одной из строк: баллы больше максимума. Исправь, чтобы расчёт был корректным.");
+        } else {
+          hideMsg();
+        }
+      } else {
+        ex[key] = input.value;
+      }
+      save();
+      computeAndPaint();
+      const pctCell = td.parentElement?.children?.[4];
+      if (pctCell){
+        pctCell.innerHTML = `<span class="typePill">${fmtPct(scorePct(ex))}</span>`;
+      }
+    });
+
+    td.appendChild(input);
+    return td;
+  }
+
+  function computeAndPaint(){
+    const sumWeight = exams.reduce((a,x) => a + (num(x.weight) || 0), 0);
+    const contrib = exams.reduce((a,x) => a + (num(x.weight)||0) * (scorePct(x)/100), 0);
+
+    const current = sumWeight > 0 ? (contrib / sumWeight) * 100 : NaN;
+    const ifZero = (contrib / 100) * 100;
+
+    kpiWeight.textContent = fmt(sumWeight) + "%";
+    const wDiff = Math.round((sumWeight - 100) * 10) / 10;
+
+    if (Math.abs(wDiff) < 0.0001){
+      kpiWeightHint.textContent = "Сумма весов ровно 100% ✅";
+      statusText.textContent = "Полный расчёт";
+      statusText.className = "typePill";
+      statusText.style.borderColor = "rgba(61,220,151,.35)";
+      statusText.style.background = "rgba(61,220,151,.12)";
+    } else {
+      kpiWeightHint.textContent = sumWeight < 100
+        ? `Не хватает ещё ${fmt(100 - sumWeight)}% (оставшиеся работы не учтены)`
+        : `Перебор на ${fmt(sumWeight - 100)}% (проверь веса)`;
+      statusText.textContent = "Проверь веса";
+      statusText.className = "typePill";
+      statusText.style.borderColor = "rgba(255,92,122,.35)";
+      statusText.style.background = "rgba(255,92,122,.12)";
+    }
+
+    kpiCurrent.textContent = Number.isFinite(current) ? fmtPct(current) : "—";
+    kpiIfZero.textContent = exams.length ? fmtPct(ifZero) : "—";
+
+    renderNeedOnly();
+
+    const bad = exams.find(x => (num(x.max) > 0 && num(x.score) > num(x.max)));
+    if (bad){
+      showMsg("Есть строка, где баллы больше максимума. Исправь значения.");
+    }
+  }
+
+  function renderNeedOnly(){
+    const target = num(el("inTarget").value);
+    const sumWeight = exams.reduce((a,x) => a + (num(x.weight) || 0), 0);
+    const remaining = 100 - sumWeight;
+
+    if (!exams.length){
+      kpiNeed.textContent = "—";
+      kpiNeedHint.textContent = "Добавь работы — тогда можно считать цель.";
+      return;
+    }
+
+    if (!(target >= 0) || target > 100){
+      kpiNeed.textContent = "—";
+      kpiNeedHint.textContent = "Введи цель от 0 до 100.";
+      return;
+    }
+
+    if (remaining <= 0){
+      kpiNeed.textContent = "Нет оставшихся весов";
+      kpiNeedHint.textContent = "Если нужно — поправь веса, чтобы сумма была < 100% для расчёта “оставшихся”.";
+      return;
+    }
+
+    const contribAlready = exams.reduce((a,x) => a + (num(x.weight)||0) * scorePct(x), 0);
+    const need = (target * 100 - contribAlready) / remaining;
+
+    if (need <= 0){
+      kpiNeed.textContent = "0% (или выше нуля)";
+      kpiNeedHint.textContent = `Цель ${fmtPct(target)} уже набрана (даже если на оставшихся будет 0%).`;
+      return;
+    }
+    if (need > 100){
+      kpiNeed.textContent = `> 100% (${fmtPct(need)})`;
+      kpiNeedHint.textContent = "С текущими баллами цель недостижима, если максимум на оставшихся = 100%.";
+      return;
+    }
+
+    kpiNeed.textContent = fmtPct(need);
+    kpiNeedHint.textContent = `Нужно в среднем ${fmtPct(need)} на оставшемся весе ${fmt(remaining)}%.`;
+  }
+
+  function scorePct(ex){
+    const m = num(ex.max);
+    const s = num(ex.score);
+    if (!(m > 0)) return 0;
+    const p = (s / m) * 100;
+    if (!Number.isFinite(p)) return 0;
+    return Math.max(0, p);
+  }
+
+  function num(v){
+    const n = Number(String(v).replace(",", "."));
+    return Number.isFinite(n) ? n : NaN;
+  }
+  function fmt(n){
+    if (!Number.isFinite(n)) return "—";
+    const rounded = Math.round(n * 10) / 10;
+    return (Math.abs(rounded - Math.round(rounded)) < 1e-9) ? String(Math.round(rounded)) : String(rounded);
+  }
+  function fmtPct(n){
+    if (!Number.isFinite(n)) return "—";
+    const rounded = Math.round(n * 100) / 100;
+    const s = (Math.abs(rounded - Math.round(rounded)) < 1e-9) ? String(Math.round(rounded)) : String(rounded);
+    return s + "%";
+  }
+
+  function showMsg(text){
+    msgBox.style.display = "block";
+    msgBox.textContent = text;
+  }
+  function hideMsg(){
+    msgBox.style.display = "none";
+    msgBox.textContent = "";
+  }
+
+  function save(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(exams));
+  }
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      const arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return null;
+      return arr.map(x => ({
+        id: String(x.id ?? crypto.randomUUID()),
+        name: String(x.name ?? ""),
+        weight: Number(x.weight ?? 0),
+        score: Number(x.score ?? 0),
+        max: Number(x.max ?? 100),
+      }));
+    } catch { return null; }
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
